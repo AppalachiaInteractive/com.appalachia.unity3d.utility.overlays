@@ -12,5 +12,11 @@
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| e4bf69e68cce5cc9c6e4fac0bb1b5d0c5db45abe | 2021-07-29 | Chris Schubert | Updates |
+
+
+ ## Tag: `v0.1.1`
+| Hash | Date | Author | Changes |
+|------|------|--------|---------|
 | 5dc8715f22bb6a12f013527a01a3def6906d76b0 | 2021-07-28 | Chris Schubert | Initializing organization repository for project. |
 | 04d3a4dd5b9f2e09955348153632b0c198d24ec2 | 2021-07-28 | Chris Schubert | Added README.md |
