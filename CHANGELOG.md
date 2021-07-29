@@ -12,6 +12,12 @@
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| ff77a34c7f95bced42e1d9c2530de9b93598da27 | 2021-07-29 | Chris Schubert | Unity meta files |
+
+
+ ## Tag: `v0.1.3`
+| Hash | Date | Author | Changes |
+|------|------|--------|---------|
 | e79879be5a76a8c223ef2f2dd5953db512c831f2 | 2021-07-29 | Chris Schubert | Package repository url updates |
 
 

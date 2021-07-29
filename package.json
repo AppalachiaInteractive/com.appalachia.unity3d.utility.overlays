@@ -1,7 +1,7 @@
 {
   "name": "com.appalachia.unity3d.utility.overlays",
   "displayName": "Appalachia.Utility.Overlays for Unity3D",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "unity": "2020.3",
   "description": "UI overlays for runtime debugging and monitoring of application builds.",
   "keywords": [
