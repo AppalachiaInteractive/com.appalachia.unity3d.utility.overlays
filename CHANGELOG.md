@@ -12,6 +12,12 @@
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| 965ae3a459b35a69d70cb0322538c5d86b32da20 | 2021-07-29 | Chris Schubert | Reimporting assets |
+
+
+ ## Tag: `v0.1.4`
+| Hash | Date | Author | Changes |
+|------|------|--------|---------|
 | ff77a34c7f95bced42e1d9c2530de9b93598da27 | 2021-07-29 | Chris Schubert | Unity meta files |
 
 
