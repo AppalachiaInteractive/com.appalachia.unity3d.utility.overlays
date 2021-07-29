@@ -12,6 +12,12 @@
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| e79879be5a76a8c223ef2f2dd5953db512c831f2 | 2021-07-29 | Chris Schubert | Package repository url updates |
+
+
+ ## Tag: `v0.1.2`
+| Hash | Date | Author | Changes |
+|------|------|--------|---------|
 | e4bf69e68cce5cc9c6e4fac0bb1b5d0c5db45abe | 2021-07-29 | Chris Schubert | Updates |
 
 
