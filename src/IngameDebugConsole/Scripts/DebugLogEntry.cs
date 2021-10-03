@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 // Container for a simple debug entry
-namespace IngameDebugConsole
+namespace Appalachia.Utility.Overlays.IngameDebugConsole
 {
 	public class DebugLogEntry : System.IEquatable<DebugLogEntry>
 	{

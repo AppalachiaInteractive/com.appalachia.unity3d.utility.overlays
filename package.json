@@ -22,13 +22,15 @@
       "name": "Multiple Asset Store Publishers"
     }
   ],
-  "dependencies": {},
+  "dependencies": {
+    "com.unity.inputsystem": "1.1.0-pre.5"
+  },
   "repository": {
     "url": "https://github.com/AppalachiaInteractive/com.appalachia.unity3d.utility.overlays.git",
     "type": "git"
   },
   "publishConfig": {
-    "registry": "http://34.138.227.71:4873/"
+    "registry": "http://35.211.123.13:4873/"
   },
   "scripts": {
     "preversion": "bash ~/com.appalachia/appa/appa package unity3d preversion",

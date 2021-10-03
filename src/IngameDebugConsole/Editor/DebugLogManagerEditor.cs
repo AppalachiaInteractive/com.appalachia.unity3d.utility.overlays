@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace IngameDebugConsole
+namespace Appalachia.Utility.Overlays.IngameDebugConsole
 {
 	[CustomEditor( typeof( DebugLogManager ) )]
 	public class DebugLogManagerEditor : Editor

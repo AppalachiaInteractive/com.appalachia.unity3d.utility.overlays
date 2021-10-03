@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace IngameDebugConsole.Commands
+namespace Appalachia.Utility.Overlays.IngameDebugConsole.Commands
 {
 	public class TimeCommands
 	{

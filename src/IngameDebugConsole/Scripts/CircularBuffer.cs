@@ -1,6 +1,6 @@
 ﻿// #define RESET_REMOVED_ELEMENTS
 
-namespace IngameDebugConsole
+namespace Appalachia.Utility.Overlays.IngameDebugConsole
 {
 	public class CircularBuffer<T>
 	{

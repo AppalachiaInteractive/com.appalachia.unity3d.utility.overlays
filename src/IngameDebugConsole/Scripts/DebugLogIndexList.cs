@@ -1,4 +1,4 @@
-﻿namespace IngameDebugConsole
+﻿namespace Appalachia.Utility.Overlays.IngameDebugConsole
 {
 	public class DebugLogIndexList
 	{

@@ -1,13 +1,13 @@
-﻿using System.Collections;
+﻿#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#endif
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.InputSystem;
-#endif
+using UnityEngine.UI;
 #if UNITY_EDITOR && UNITY_2021_1_OR_NEWER
 using Screen = UnityEngine.Device.Screen; // To support Device Simulator on Unity 2021.1+
 #endif
@@ -24,7 +24,7 @@ using Screen = UnityEngine.Device.Screen; // To support Device Simulator on Unit
 // to show their properties on screen (these log items are recycled as the list is scrolled)
 
 // An enum to represent filtered log types
-namespace IngameDebugConsole
+namespace Appalachia.Utility.Overlays.IngameDebugConsole
 {
 	public enum DebugLogFilter
 	{

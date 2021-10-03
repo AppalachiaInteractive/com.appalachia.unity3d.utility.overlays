@@ -3,14 +3,13 @@
 #define USE_BOLD_COMMAND_SIGNATURES
 #endif
 
-using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
-using Object = UnityEngine.Object;
+using UnityEngine;
 #if UNITY_EDITOR && UNITY_2021_1_OR_NEWER
 using SystemInfo = UnityEngine.Device.SystemInfo; // To support Device Simulator on Unity 2021.1+
 #endif
@@ -19,7 +18,7 @@ using SystemInfo = UnityEngine.Device.SystemInfo; // To support Device Simulator
 // Supported method parameter types: int, float, bool, string, Vector2, Vector3, Vector4
 
 // Helper class to store important information about a command
-namespace IngameDebugConsole
+namespace Appalachia.Utility.Overlays.IngameDebugConsole
 {
 	public class ConsoleMethodInfo
 	{
