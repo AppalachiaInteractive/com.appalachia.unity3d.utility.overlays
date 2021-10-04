@@ -19,27 +19,57 @@ namespace Appalachia.Utility.Overlays.Graphy.Ram
 {
     public class G_RamText : MonoBehaviour
     {
-        #region Variables -> Serialized Private
+#region Methods -> Public
 
-        [SerializeField] private    Text            m_allocatedSystemMemorySizeText         = null;
-        [SerializeField] private    Text            m_reservedSystemMemorySizeText          = null;
-        [SerializeField] private    Text            m_monoSystemMemorySizeText              = null;
+        public void UpdateParameters()
+        {
+            m_allocatedSystemMemorySizeText.color = m_graphyManager.AllocatedRamColor;
+            m_reservedSystemMemorySizeText.color = m_graphyManager.ReservedRamColor;
+            m_monoSystemMemorySizeText.color = m_graphyManager.MonoRamColor;
 
-        #endregion
+            m_updateRate = m_graphyManager.RamTextUpdateRate;
+        }
 
-        #region Variables -> Private
+#endregion
 
-        private                     GraphyManager   m_graphyManager                         = null;
+#region Methods -> Private
 
-        private                     G_RamMonitor    m_ramMonitor                            = null;
+        private void Init()
+        {
+            // We assume no game will consume more than 16GB of RAM.
+            // If it does, who cares about some minuscule garbage allocation lol.
+            G_IntString.Init(0, 16386);
 
-        private                     float           m_updateRate                            = 4f;  // 4 updates per sec.
+            m_graphyManager = transform.root.GetComponentInChildren<GraphyManager>();
 
-        private                     float           m_deltaTime                             = 0.0f;
+            m_ramMonitor = GetComponent<G_RamMonitor>();
 
-        #endregion
+            UpdateParameters();
+        }
 
-        #region Methods -> Unity Callbacks
+#endregion
+
+#region Variables -> Serialized Private
+
+        [SerializeField] private Text m_allocatedSystemMemorySizeText;
+        [SerializeField] private Text m_reservedSystemMemorySizeText;
+        [SerializeField] private Text m_monoSystemMemorySizeText;
+
+#endregion
+
+#region Variables -> Private
+
+        private GraphyManager m_graphyManager;
+
+        private G_RamMonitor m_ramMonitor;
+
+        private float m_updateRate = 4f; // 4 updates per sec.
+
+        private float m_deltaTime;
+
+#endregion
+
+#region Methods -> Unity Callbacks
 
         private void Awake()
         {
@@ -50,47 +80,19 @@ namespace Appalachia.Utility.Overlays.Graphy.Ram
         {
             m_deltaTime += Time.unscaledDeltaTime;
 
-            if (m_deltaTime > 1f / m_updateRate)
+            if (m_deltaTime > (1f / m_updateRate))
             {
                 // Update allocated, mono and reserved memory
-                m_allocatedSystemMemorySizeText .text = ((int)m_ramMonitor.AllocatedRam).ToStringNonAlloc();
-                m_reservedSystemMemorySizeText  .text = ((int)m_ramMonitor.ReservedRam).ToStringNonAlloc();
-                m_monoSystemMemorySizeText      .text = ((int)m_ramMonitor.MonoRam).ToStringNonAlloc();
+                m_allocatedSystemMemorySizeText.text =
+                    ((int) m_ramMonitor.AllocatedRam).ToStringNonAlloc();
+                m_reservedSystemMemorySizeText.text =
+                    ((int) m_ramMonitor.ReservedRam).ToStringNonAlloc();
+                m_monoSystemMemorySizeText.text = ((int) m_ramMonitor.MonoRam).ToStringNonAlloc();
 
-                m_deltaTime                     = 0f;
+                m_deltaTime = 0f;
             }
         }
 
-        #endregion
-        
-        #region Methods -> Public
-        
-        public void UpdateParameters()
-        {
-            m_allocatedSystemMemorySizeText .color = m_graphyManager.AllocatedRamColor;
-            m_reservedSystemMemorySizeText  .color = m_graphyManager.ReservedRamColor;
-            m_monoSystemMemorySizeText      .color = m_graphyManager.MonoRamColor;
-
-            m_updateRate                    = m_graphyManager.RamTextUpdateRate;
-        }
-        
-        #endregion
-
-        #region Methods -> Private
-
-        private void Init()
-        {
-            // We assume no game will consume more than 16GB of RAM.
-            // If it does, who cares about some minuscule garbage allocation lol.
-            G_IntString.Init( 0, 16386 ); 
-
-            m_graphyManager = transform.root.GetComponentInChildren<GraphyManager>();
-
-            m_ramMonitor = GetComponent<G_RamMonitor>();
-           
-            UpdateParameters();
-        }
-
-        #endregion
+#endregion
     }
 }

@@ -20,112 +20,81 @@ namespace Appalachia.Utility.Overlays.Graphy
     [CustomEditor(typeof(GraphyDebugger))]
     internal class GraphyDebuggerEditor : Editor
     {
-        /* ----- TODO: ----------------------------
-         * Add summaries to the variables.
-         * Add summaries to the functions.
-         * Finish spacing on "OnInspectorGUI".
-         * Add sections to "OnInspectorGUI".
-         * Fix the use of Space to be consistent with "GraphyManagerEditor".
-         * --------------------------------------*/
-        
-        #region Variables -> Private
-
-        private GraphyDebugger  m_target;
-
-        private int             m_newDebugPacketListSize                = 0;
-
-        private int             m_previouslySelectedDebugPacketIndex    = 0;
-        private int             m_currentlySelectedDebugPacketIndex     = 0;
-
-        private int             m_selectedDebugPacketCondition          = 0;
-
-        #endregion
-
-        #region Methods -> Unity Callbacks
+#region Methods -> Unity Callbacks
 
         private void OnEnable()
         {
             m_target = (GraphyDebugger) target;
         }
 
-        #endregion
+#endregion
 
-        #region Methods -> Public Override
+#region Methods -> Public Override
 
         public override void OnInspectorGUI()
         {
-            if (m_target == null && target == null)
+            if ((m_target == null) && (target == null))
             {
                 base.OnInspectorGUI();
 
                 return;
             }
 
-            float defaultLabelWidth = EditorGUIUtility.labelWidth;
-            float defaultFieldWidth = EditorGUIUtility.fieldWidth;
+            var defaultLabelWidth = EditorGUIUtility.labelWidth;
+            var defaultFieldWidth = EditorGUIUtility.fieldWidth;
 
             //===== CONTENT REGION ========================================================================
 
             GUILayout.Space(20);
 
-            #region Section -> Logo
+#region Section -> Logo
 
             if (GraphyEditorStyle.DebuggerLogoTexture != null)
             {
-                GUILayout.Label
-                (
-                    image: GraphyEditorStyle.DebuggerLogoTexture,
-                    style: new GUIStyle(GUI.skin.GetStyle("Label"))
-                    {
-                        alignment = TextAnchor.UpperCenter
-                    }
+                GUILayout.Label(
+                    GraphyEditorStyle.DebuggerLogoTexture,
+                    new GUIStyle(GUI.skin.GetStyle("Label")) {alignment = TextAnchor.UpperCenter}
                 );
 
                 GUILayout.Space(10);
             }
             else
             {
-                EditorGUILayout.LabelField
-                (
-                    label: "[ GRAPHY - DEBUGGER ]",
-                    style: GraphyEditorStyle.HeaderStyle1
-                );
+                EditorGUILayout.LabelField("[ GRAPHY - DEBUGGER ]", GraphyEditorStyle.HeaderStyle1);
             }
 
-            #endregion
+#endregion
 
             GUILayout.Space(5); //Extra pixels added when the logo is used.
 
-            #region Section -> Settings
+#region Section -> Settings
 
-            SerializedObject serObj = serializedObject;
+            var serObj = serializedObject;
 
-            SerializedProperty debugPacketList = serObj.FindProperty("m_debugPackets"); // Find the List in our script and create a refrence of it
+            var debugPacketList =
+                serObj.FindProperty(
+                    "m_debugPackets"
+                ); // Find the List in our script and create a refrence of it
 
             //Update our list
             serObj.Update();
- 
-            EditorGUILayout.LabelField("Current [Debug Packets] list size: " + debugPacketList.arraySize);
+
+            EditorGUILayout.LabelField(
+                "Current [Debug Packets] list size: " + debugPacketList.arraySize
+            );
 
             EditorGUIUtility.fieldWidth = 32;
             EditorGUILayout.BeginHorizontal();
 
-            
-
-            m_newDebugPacketListSize = EditorGUILayout.IntField
-            (
-                label: "Define a new list size",
-                value: m_newDebugPacketListSize
+            m_newDebugPacketListSize = EditorGUILayout.IntField(
+                "Define a new list size",
+                m_newDebugPacketListSize
             );
-            
+
             if (GUILayout.Button("Resize List"))
             {
-                if (EditorUtility.DisplayDialog
-                (
-                    title:
+                if (EditorUtility.DisplayDialog(
                     "Resize List",
-
-                    message:
                     "Are you sure you want to resize the entire List?\n\n" +
                     "Current List Size -> " +
                     debugPacketList.arraySize +
@@ -134,13 +103,9 @@ namespace Appalachia.Utility.Overlays.Graphy
                     m_newDebugPacketListSize +
                     "\n" +
                     "This will add default entries if the value is greater than the list size, or erase the bottom values until the new size specified.",
-
-                    ok:
                     "Resize",
-
-                    cancel:
-                    "Cancel")
-                )
+                    "Cancel"
+                ))
                 {
                     m_currentlySelectedDebugPacketIndex = 0;
 
@@ -151,9 +116,12 @@ namespace Appalachia.Utility.Overlays.Graphy
                             debugPacketList.InsertArrayElementAtIndex(debugPacketList.arraySize);
                             SetDefaultDebugPacketValues(debugPacketList);
                         }
+
                         while (m_newDebugPacketListSize < debugPacketList.arraySize)
                         {
-                            debugPacketList.DeleteArrayElementAtIndex(debugPacketList.arraySize - 1);
+                            debugPacketList.DeleteArrayElementAtIndex(
+                                debugPacketList.arraySize - 1
+                            );
                         }
                     }
                 }
@@ -161,7 +129,10 @@ namespace Appalachia.Utility.Overlays.Graphy
 
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.LabelField("NOT RECOMMENDED (Only use for first initialization)", EditorStyles.centeredGreyMiniLabel);
+            EditorGUILayout.LabelField(
+                "NOT RECOMMENDED (Only use for first initialization)",
+                EditorStyles.centeredGreyMiniLabel
+            );
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
@@ -182,15 +153,18 @@ namespace Appalachia.Utility.Overlays.Graphy
 
             EditorGUILayout.BeginHorizontal();
 
-            List<string> debugPacketNames = new List<string>();
-            for (int i = 0; i < debugPacketList.arraySize; i++)
+            var debugPacketNames = new List<string>();
+            for (var i = 0; i < debugPacketList.arraySize; i++)
             {
-                SerializedProperty listItem = debugPacketList.GetArrayElementAtIndex(i);
+                var listItem = debugPacketList.GetArrayElementAtIndex(i);
+
                 // NOTE: If the Popup detects two equal strings, it just paints 1, that's why I always add the "i"
-                char checkMark = listItem.FindPropertyRelative("Active").boolValue ? '\u2714' : '\u2718';
-                debugPacketNames.Add
-                (
-                    (i + 1) +
+                var checkMark = listItem.FindPropertyRelative("Active").boolValue
+                    ? '\u2714'
+                    : '\u2718';
+                debugPacketNames.Add(
+                    i +
+                    1 +
                     " (" +
                     checkMark +
                     ") " +
@@ -202,7 +176,10 @@ namespace Appalachia.Utility.Overlays.Graphy
                 );
             }
 
-            m_currentlySelectedDebugPacketIndex = EditorGUILayout.Popup(m_currentlySelectedDebugPacketIndex, debugPacketNames.ToArray());
+            m_currentlySelectedDebugPacketIndex = EditorGUILayout.Popup(
+                m_currentlySelectedDebugPacketIndex,
+                debugPacketNames.ToArray()
+            );
 
             if (m_currentlySelectedDebugPacketIndex != m_previouslySelectedDebugPacketIndex)
             {
@@ -211,7 +188,7 @@ namespace Appalachia.Utility.Overlays.Graphy
                 m_previouslySelectedDebugPacketIndex = m_currentlySelectedDebugPacketIndex;
             }
 
-            Color defaultGUIColor = GUI.color;
+            var defaultGUIColor = GUI.color;
 
             GUI.color = new Color(0.7f, 1f, 0.0f, 1f);
 
@@ -252,90 +229,73 @@ namespace Appalachia.Utility.Overlays.Graphy
 
             //Display our list to the inspector window
 
-            SerializedProperty listItemSelected = debugPacketList.GetArrayElementAtIndex(m_currentlySelectedDebugPacketIndex);
+            var listItemSelected =
+                debugPacketList.GetArrayElementAtIndex(m_currentlySelectedDebugPacketIndex);
 
-            SerializedProperty Active               = listItemSelected.FindPropertyRelative("Active");
-            SerializedProperty Id                   = listItemSelected.FindPropertyRelative("Id");
-            SerializedProperty ExecuteOnce          = listItemSelected.FindPropertyRelative("ExecuteOnce");
-            SerializedProperty InitSleepTime        = listItemSelected.FindPropertyRelative("InitSleepTime");
-            SerializedProperty ExecuteSleepTime     = listItemSelected.FindPropertyRelative("ExecuteSleepTime");
-            SerializedProperty ConditionEvaluation  = listItemSelected.FindPropertyRelative("ConditionEvaluation");
-            SerializedProperty DebugConditions      = listItemSelected.FindPropertyRelative("DebugConditions");
-            SerializedProperty MessageType          = listItemSelected.FindPropertyRelative("MessageType");
-            SerializedProperty Message              = listItemSelected.FindPropertyRelative("Message");
-            SerializedProperty TakeScreenshot       = listItemSelected.FindPropertyRelative("TakeScreenshot");
-            SerializedProperty ScreenshotFileName   = listItemSelected.FindPropertyRelative("ScreenshotFileName");
-            SerializedProperty DebugBreak           = listItemSelected.FindPropertyRelative("DebugBreak");
-            SerializedProperty UnityEvents          = listItemSelected.FindPropertyRelative("UnityEvents");
+            var Active = listItemSelected.FindPropertyRelative("Active");
+            var Id = listItemSelected.FindPropertyRelative("Id");
+            var ExecuteOnce = listItemSelected.FindPropertyRelative("ExecuteOnce");
+            var InitSleepTime = listItemSelected.FindPropertyRelative("InitSleepTime");
+            var ExecuteSleepTime = listItemSelected.FindPropertyRelative("ExecuteSleepTime");
+            var ConditionEvaluation = listItemSelected.FindPropertyRelative("ConditionEvaluation");
+            var DebugConditions = listItemSelected.FindPropertyRelative("DebugConditions");
+            var MessageType = listItemSelected.FindPropertyRelative("MessageType");
+            var Message = listItemSelected.FindPropertyRelative("Message");
+            var TakeScreenshot = listItemSelected.FindPropertyRelative("TakeScreenshot");
+            var ScreenshotFileName = listItemSelected.FindPropertyRelative("ScreenshotFileName");
+            var DebugBreak = listItemSelected.FindPropertyRelative("DebugBreak");
+            var UnityEvents = listItemSelected.FindPropertyRelative("UnityEvents");
 
-            #endregion
+#endregion
 
-            EditorGUILayout.LabelField
-            (
-                label:
+            EditorGUILayout.LabelField(
                 "[ PACKET ] - ID: " +
                 Id.intValue +
                 " (Conditions: " +
                 DebugConditions.arraySize +
                 ")",
-
-                style: GraphyEditorStyle.HeaderStyle2
+                GraphyEditorStyle.HeaderStyle2
             );
 
             EditorGUIUtility.labelWidth = 150;
             EditorGUIUtility.fieldWidth = 35;
 
-            Active.boolValue = EditorGUILayout.Toggle
-            (
-                new GUIContent
-                (
-                    text:       "Active",
-                    tooltip:    "If false, it will not be checked"
-                ),
-                value:          Active.boolValue
+            Active.boolValue = EditorGUILayout.Toggle(
+                new GUIContent("Active", "If false, it will not be checked"),
+                Active.boolValue
             );
 
-            Id.intValue = EditorGUILayout.IntField
-            (
-                new GUIContent
-                (
-                    text:       "ID",
-                    tooltip:    "Optional Id. It's used to get or remove DebugPackets in runtime"
+            Id.intValue = EditorGUILayout.IntField(
+                new GUIContent(
+                    "ID",
+                    "Optional Id. It's used to get or remove DebugPackets in runtime"
                 ),
-                value:          Id.intValue
+                Id.intValue
             );
 
-            ExecuteOnce.boolValue = EditorGUILayout.Toggle
-            (
-                new GUIContent
-                (
-                    text:       "Execute once",
-                    tooltip:    "If true, once the actions are executed, this DebugPacket will delete itself"
+            ExecuteOnce.boolValue = EditorGUILayout.Toggle(
+                new GUIContent(
+                    "Execute once",
+                    "If true, once the actions are executed, this DebugPacket will delete itself"
                 ),
-                value:          ExecuteOnce.boolValue
+                ExecuteOnce.boolValue
             );
 
-            InitSleepTime.floatValue = EditorGUILayout.FloatField
-            (
-                new GUIContent
-                (
-                    text:       "Init sleep time",
-                    tooltip:    "Time to wait before checking if conditions are met (use this to avoid low fps drops triggering the conditions when loading the game)"
+            InitSleepTime.floatValue = EditorGUILayout.FloatField(
+                new GUIContent(
+                    "Init sleep time",
+                    "Time to wait before checking if conditions are met (use this to avoid low fps drops triggering the conditions when loading the game)"
                 ),
-                value:          InitSleepTime.floatValue
+                InitSleepTime.floatValue
             );
 
-            ExecuteSleepTime.floatValue = EditorGUILayout.FloatField
-            (
-                new GUIContent
-                (
-                    text:       "Sleep time after execute",
-                    tooltip:    "Time to wait before checking if conditions are met again (once they have already been met and if ExecuteOnce is false)"
+            ExecuteSleepTime.floatValue = EditorGUILayout.FloatField(
+                new GUIContent(
+                    "Sleep time after execute",
+                    "Time to wait before checking if conditions are met again (once they have already been met and if ExecuteOnce is false)"
                 ),
-                value:          ExecuteSleepTime.floatValue
+                ExecuteSleepTime.floatValue
             );
-
-            
 
             EditorGUIUtility.labelWidth = defaultLabelWidth;
             EditorGUIUtility.fieldWidth = defaultFieldWidth;
@@ -343,16 +303,18 @@ namespace Appalachia.Utility.Overlays.Graphy
             EditorGUILayout.Space();
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("[ CONDITIONS ] (" + DebugConditions.arraySize + ")", GraphyEditorStyle.HeaderStyle2);
+            EditorGUILayout.LabelField(
+                "[ CONDITIONS ] (" + DebugConditions.arraySize + ")",
+                GraphyEditorStyle.HeaderStyle2
+            );
 
-            EditorGUILayout.PropertyField
-            (
+            EditorGUILayout.PropertyField(
                 ConditionEvaluation,
                 new GUIContent("Condition evaluation")
             );
 
             EditorGUILayout.Space();
-            
+
             if (DebugConditions.arraySize < 1)
             {
                 DebugConditions.InsertArrayElementAtIndex(DebugConditions.arraySize);
@@ -361,21 +323,35 @@ namespace Appalachia.Utility.Overlays.Graphy
 
             EditorGUILayout.BeginHorizontal();
 
-            List<string> debugPacketConditionNames = new List<string>();
-            for (int i = 0; i < DebugConditions.arraySize; i++)
+            var debugPacketConditionNames = new List<string>();
+            for (var i = 0; i < DebugConditions.arraySize; i++)
             {
-                SerializedProperty listItem = DebugConditions.GetArrayElementAtIndex(i);
+                var listItem = DebugConditions.GetArrayElementAtIndex(i);
+
                 // NOTE: If the Popup detects two equal strings, it just paints 1, that's why I always add the "i"
 
-                string conditionName = (i + 1).ToString() + " - ";
-                conditionName += GetComparerStringFromDebugVariable((GraphyDebugger.DebugVariable)listItem.FindPropertyRelative("Variable").intValue) + " ";
-                conditionName += GetComparerStringFromDebugComparer((GraphyDebugger.DebugComparer)listItem.FindPropertyRelative("Comparer").intValue) + " ";
+                var conditionName = i + 1 + " - ";
+                conditionName += GetComparerStringFromDebugVariable(
+                                     (GraphyDebugger.DebugVariable) listItem
+                                        .FindPropertyRelative("Variable")
+                                        .intValue
+                                 ) +
+                                 " ";
+                conditionName += GetComparerStringFromDebugComparer(
+                                     (GraphyDebugger.DebugComparer) listItem
+                                        .FindPropertyRelative("Comparer")
+                                        .intValue
+                                 ) +
+                                 " ";
                 conditionName += listItem.FindPropertyRelative("Value").floatValue.ToString();
-                
+
                 debugPacketConditionNames.Add(conditionName);
             }
 
-            m_selectedDebugPacketCondition = EditorGUILayout.Popup(m_selectedDebugPacketCondition, debugPacketConditionNames.ToArray());
+            m_selectedDebugPacketCondition = EditorGUILayout.Popup(
+                m_selectedDebugPacketCondition,
+                debugPacketConditionNames.ToArray()
+            );
 
             GUI.color = new Color(0.7f, 1f, 0.0f, 1f);
 
@@ -410,29 +386,18 @@ namespace Appalachia.Utility.Overlays.Graphy
 
             EditorGUILayout.EndHorizontal();
 
-            SerializedProperty conditionListItemSelected = DebugConditions.GetArrayElementAtIndex(m_selectedDebugPacketCondition);
+            var conditionListItemSelected =
+                DebugConditions.GetArrayElementAtIndex(m_selectedDebugPacketCondition);
 
-            SerializedProperty Variable = conditionListItemSelected.FindPropertyRelative("Variable");
-            SerializedProperty Comparer = conditionListItemSelected.FindPropertyRelative("Comparer");
-            SerializedProperty Value    = conditionListItemSelected.FindPropertyRelative("Value");
+            var Variable = conditionListItemSelected.FindPropertyRelative("Variable");
+            var Comparer = conditionListItemSelected.FindPropertyRelative("Comparer");
+            var Value = conditionListItemSelected.FindPropertyRelative("Value");
 
-            EditorGUILayout.PropertyField
-            (
-                Variable,
-                new GUIContent("Variable")
-            );
+            EditorGUILayout.PropertyField(Variable, new GUIContent("Variable"));
 
-            EditorGUILayout.PropertyField
-            (
-                Comparer,
-                new GUIContent("Comparer")
-            );
+            EditorGUILayout.PropertyField(Comparer, new GUIContent("Comparer"));
 
-            EditorGUILayout.PropertyField
-            (
-                Value,
-                new GUIContent("Value")
-            );
+            EditorGUILayout.PropertyField(Value, new GUIContent("Value"));
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
@@ -442,86 +407,99 @@ namespace Appalachia.Utility.Overlays.Graphy
             EditorGUIUtility.labelWidth = 140;
             EditorGUIUtility.fieldWidth = 35;
 
-            EditorGUILayout.PropertyField
-            (
-                MessageType,
-                new GUIContent("Message type")
-            );
+            EditorGUILayout.PropertyField(MessageType, new GUIContent("Message type"));
 
             EditorGUILayout.PropertyField(Message);
 
-            TakeScreenshot.boolValue = EditorGUILayout.Toggle
-            (
-                new GUIContent
-                (
-                    text:       "Take screenshot",
-                    tooltip:    "If true, it takes a screenshot and stores it. The location where the image is written to can include a directory/folder list. With no directory/folder list the image will be written into the Project folder. On mobile platforms the filename is appended to the persistent data path."
+            TakeScreenshot.boolValue = EditorGUILayout.Toggle(
+                new GUIContent(
+                    "Take screenshot",
+                    "If true, it takes a screenshot and stores it. The location where the image is written to can include a directory/folder list. With no directory/folder list the image will be written into the Project folder. On mobile platforms the filename is appended to the persistent data path."
                 ),
-                value:          TakeScreenshot.boolValue
+                TakeScreenshot.boolValue
             );
 
             if (TakeScreenshot.boolValue)
             {
-                EditorGUILayout.PropertyField
-                (
+                EditorGUILayout.PropertyField(
                     ScreenshotFileName,
-                    new GUIContent
-                    (
-                        text: "Screenshot file name",
-                        tooltip: "Avoid this characters: * . \" / \\ [ ] : ; | = , \n\nIt will have the date appended at the end to avoid overwriting."
+                    new GUIContent(
+                        "Screenshot file name",
+                        "Avoid this characters: * . \" / \\ [ ] : ; | = , \n\nIt will have the date appended at the end to avoid overwriting."
                     )
                 );
             }
 
-            DebugBreak.boolValue = EditorGUILayout.Toggle
-            (
-                new GUIContent
-                (
-                    text: "Debug Break",
-                    tooltip: "If true, it pauses the editor"
-                ),
+            DebugBreak.boolValue = EditorGUILayout.Toggle(
+                new GUIContent("Debug Break", "If true, it pauses the editor"),
                 DebugBreak.boolValue
             );
-            
+
             EditorGUILayout.PropertyField(UnityEvents);
 
             EditorGUIUtility.labelWidth = defaultLabelWidth;
             EditorGUIUtility.fieldWidth = defaultFieldWidth;
 
             serializedObject.ApplyModifiedProperties();
-            
         }
 
-        #endregion
+#endregion
 
-        #region Methods -> Private
+        /* ----- TODO: ----------------------------
+         * Add summaries to the variables.
+         * Add summaries to the functions.
+         * Finish spacing on "OnInspectorGUI".
+         * Add sections to "OnInspectorGUI".
+         * Fix the use of Space to be consistent with "GraphyManagerEditor".
+         * --------------------------------------*/
+
+#region Variables -> Private
+
+        private GraphyDebugger m_target;
+
+        private int m_newDebugPacketListSize;
+
+        private int m_previouslySelectedDebugPacketIndex;
+        private int m_currentlySelectedDebugPacketIndex;
+
+        private int m_selectedDebugPacketCondition;
+
+#endregion
+
+#region Methods -> Private
 
         private void SetDefaultDebugPacketValues(SerializedProperty debugPacketSerializedProperty)
         {
-            GraphyDebugger.DebugPacket debugPacket = new GraphyDebugger.DebugPacket();
+            var debugPacket = new GraphyDebugger.DebugPacket();
 
-            debugPacketSerializedProperty.GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
-                .FindPropertyRelative("Active")
-                .boolValue  = debugPacket.Active;
+            debugPacketSerializedProperty
+               .GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
+               .FindPropertyRelative("Active")
+               .boolValue = debugPacket.Active;
 
-            debugPacketSerializedProperty.GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
-                .FindPropertyRelative("Id")
-                .intValue   = debugPacketSerializedProperty.arraySize;
+            debugPacketSerializedProperty
+               .GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
+               .FindPropertyRelative("Id")
+               .intValue = debugPacketSerializedProperty.arraySize;
 
-            debugPacketSerializedProperty.GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
-                .FindPropertyRelative("ExecuteOnce")
-                .boolValue  = debugPacket.ExecuteOnce;
+            debugPacketSerializedProperty
+               .GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
+               .FindPropertyRelative("ExecuteOnce")
+               .boolValue = debugPacket.ExecuteOnce;
 
-            debugPacketSerializedProperty.GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
-                .FindPropertyRelative("InitSleepTime")
-                .floatValue = debugPacket.InitSleepTime;
+            debugPacketSerializedProperty
+               .GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
+               .FindPropertyRelative("InitSleepTime")
+               .floatValue = debugPacket.InitSleepTime;
 
-            debugPacketSerializedProperty.GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
-                .FindPropertyRelative("ExecuteSleepTime")
-                .floatValue = debugPacket.ExecuteSleepTime;
+            debugPacketSerializedProperty
+               .GetArrayElementAtIndex(debugPacketSerializedProperty.arraySize - 1)
+               .FindPropertyRelative("ExecuteSleepTime")
+               .floatValue = debugPacket.ExecuteSleepTime;
         }
 
-        private string GetComparerStringFromDebugVariable(GraphyDebugger.DebugVariable debugVariable)
+        private string GetComparerStringFromDebugVariable(
+            GraphyDebugger.DebugVariable debugVariable)
         {
             switch (debugVariable)
             {
@@ -546,11 +524,11 @@ namespace Appalachia.Utility.Overlays.Graphy
 
                 default:
                     return null;
-
             }
         }
 
-        private string GetComparerStringFromDebugComparer(GraphyDebugger.DebugComparer debugComparer)
+        private string GetComparerStringFromDebugComparer(
+            GraphyDebugger.DebugComparer debugComparer)
         {
             switch (debugComparer)
             {
@@ -570,6 +548,6 @@ namespace Appalachia.Utility.Overlays.Graphy
             }
         }
 
-        #endregion
+#endregion
     }
 }

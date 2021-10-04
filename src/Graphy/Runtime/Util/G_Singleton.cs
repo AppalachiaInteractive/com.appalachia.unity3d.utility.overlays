@@ -17,21 +17,14 @@ using UnityEngine;
 namespace Appalachia.Utility.Overlays.Graphy.Util
 {
     /// <summary>
-    /// Be aware this will not prevent a non singleton constructor
-    ///   such as `T myT = new T();`
-    /// To prevent that, add `protected T () {}` to your singleton class.
+    ///     Be aware this will not prevent a non singleton constructor
+    ///     such as `T myT = new T();`
+    ///     To prevent that, add `protected T () {}` to your singleton class.
     /// </summary>
-    public class G_Singleton<T> : MonoBehaviour where T : MonoBehaviour
+    public class G_Singleton<T> : MonoBehaviour
+        where T : MonoBehaviour
     {
-        #region Variables -> Private
-
-        private static  T       _instance;
-
-        private static  object  _lock       = new object();
-
-        #endregion
-
-        #region Properties -> Public
+#region Properties -> Public
 
         public static T Instance
         {
@@ -41,11 +34,13 @@ namespace Appalachia.Utility.Overlays.Graphy.Util
                 {
                     if (_instance == null)
                     {
-                        Debug.Log
-                        (
-                            "[Singleton] An instance of " + typeof(T) +
+                        Debug.Log(
+                            "[Singleton] An instance of " +
+                            typeof(T) +
                             " is trying to be accessed, but it wasn't initialized first. " +
-                            "Make sure to add an instance of " + typeof(T) + " in the scene before " +
+                            "Make sure to add an instance of " +
+                            typeof(T) +
+                            " in the scene before " +
                             " trying to access it."
                         );
                     }
@@ -55,11 +50,19 @@ namespace Appalachia.Utility.Overlays.Graphy.Util
             }
         }
 
-        #endregion
+#endregion
 
-        #region Methods -> Unity Callbacks
+#region Variables -> Private
 
-        void Awake()
+        private static T _instance;
+
+        private static readonly object _lock = new();
+
+#endregion
+
+#region Methods -> Unity Callbacks
+
+        private void Awake()
         {
             if (_instance != null)
             {
@@ -71,7 +74,7 @@ namespace Appalachia.Utility.Overlays.Graphy.Util
             }
         }
 
-        void OnDestroy()
+        private void OnDestroy()
         {
             if (_instance == this)
             {
@@ -79,6 +82,6 @@ namespace Appalachia.Utility.Overlays.Graphy.Util
             }
         }
 
-        #endregion
+#endregion
     }
 }

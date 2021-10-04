@@ -19,38 +19,47 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
 {
     public class G_FpsText : MonoBehaviour
     {
-        #region Variables -> Serialized Private
+#region Methods -> Public
 
-        [SerializeField] private    Text            m_fpsText               = null;
-        [SerializeField] private    Text            m_msText                = null;
+        public void UpdateParameters()
+        {
+            m_updateRate = m_graphyManager.FpsTextUpdateRate;
+        }
 
-        [SerializeField] private    Text            m_avgFpsText            = null;
-        [SerializeField] private    Text            m_onePercentFpsText     = null;
-        [SerializeField] private    Text            m_zero1PercentFpsText   = null;
+#endregion
 
-        #endregion
+#region Variables -> Serialized Private
 
-        #region Variables -> Private
+        [SerializeField] private Text m_fpsText;
+        [SerializeField] private Text m_msText;
 
-        private                     GraphyManager   m_graphyManager     = null;
+        [SerializeField] private Text m_avgFpsText;
+        [SerializeField] private Text m_onePercentFpsText;
+        [SerializeField] private Text m_zero1PercentFpsText;
 
-        private                     G_FpsMonitor    m_fpsMonitor        = null;
+#endregion
 
-        private                     int             m_updateRate        = 4;  // 4 updates per sec.
+#region Variables -> Private
 
-        private                     int             m_frameCount        = 0;
+        private GraphyManager m_graphyManager;
 
-        private                     float           m_deltaTime         = 0f;
+        private G_FpsMonitor m_fpsMonitor;
 
-        private                     float           m_fps               = 0f;
+        private int m_updateRate = 4; // 4 updates per sec.
 
-        private                     float           m_ms               = 0f;
+        private int m_frameCount;
 
-        private const               string          m_msStringFormat    = "0.0";
+        private float m_deltaTime;
 
-        #endregion
+        private float m_fps;
 
-        #region Methods -> Unity Callbacks
+        private float m_ms;
+
+        private const string m_msStringFormat = "0.0";
+
+#endregion
+
+#region Methods -> Unity Callbacks
 
         private void Awake()
         {
@@ -65,10 +74,10 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
 
             // Only update texts 'm_updateRate' times per second
 
-            if (m_deltaTime > 1f / m_updateRate)
+            if (m_deltaTime > (1f / m_updateRate))
             {
                 m_fps = m_frameCount / m_deltaTime;
-                m_ms = m_deltaTime / m_frameCount * 1000f;
+                m_ms = (m_deltaTime / m_frameCount) * 1000f;
 
                 // Update fps
                 m_fpsText.text = Mathf.RoundToInt(m_fps).ToStringNonAlloc();
@@ -79,15 +88,16 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
                 SetFpsRelatedTextColor(m_msText, m_fps);
 
                 // Update 1% fps
-                m_onePercentFpsText.text = ((int)(m_fpsMonitor.OnePercentFPS)).ToStringNonAlloc();
+                m_onePercentFpsText.text = ((int) m_fpsMonitor.OnePercentFPS).ToStringNonAlloc();
                 SetFpsRelatedTextColor(m_onePercentFpsText, m_fpsMonitor.OnePercentFPS);
 
                 // Update 0.1% fps
-                m_zero1PercentFpsText.text = ((int)(m_fpsMonitor.Zero1PercentFps)).ToStringNonAlloc();
+                m_zero1PercentFpsText.text =
+                    ((int) m_fpsMonitor.Zero1PercentFps).ToStringNonAlloc();
                 SetFpsRelatedTextColor(m_zero1PercentFpsText, m_fpsMonitor.Zero1PercentFps);
 
                 // Update avg fps
-                m_avgFpsText.text = ((int)(m_fpsMonitor.AverageFPS)).ToStringNonAlloc();
+                m_avgFpsText.text = ((int) m_fpsMonitor.AverageFPS).ToStringNonAlloc();
                 SetFpsRelatedTextColor(m_avgFpsText, m_fpsMonitor.AverageFPS);
 
                 // Reset variables
@@ -96,30 +106,19 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
             }
         }
 
-        #endregion
-        
-        #region Methods -> Public
+#endregion
 
-        public void UpdateParameters()
-        {
-            m_updateRate = m_graphyManager.FpsTextUpdateRate;
-        }
-
-        #endregion
-
-        #region Methods -> Private
+#region Methods -> Private
 
         /// <summary>
-        /// Assigns color to a text according to their fps numeric value and
-        /// the colors specified in the 3 categories (Good, Caution, Critical).
+        ///     Assigns color to a text according to their fps numeric value and
+        ///     the colors specified in the 3 categories (Good, Caution, Critical).
         /// </summary>
-        /// 
         /// <param name="text">
-        /// UI Text component to change its color
+        ///     UI Text component to change its color
         /// </param>
-        /// 
         /// <param name="fps">
-        /// Numeric fps value
+        ///     Numeric fps value
         /// </param>
         private void SetFpsRelatedTextColor(Text text, float fps)
         {
@@ -139,16 +138,16 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
 
         private void Init()
         {
-            G_IntString.Init( 0, 2000 );  // Max fps expected
-            G_FloatString.Init( 0, 100 ); // Max ms expected per frame
+            G_IntString.Init(0, 2000);  // Max fps expected
+            G_FloatString.Init(0, 100); // Max ms expected per frame
 
             m_graphyManager = transform.root.GetComponentInChildren<GraphyManager>();
 
             m_fpsMonitor = GetComponent<G_FpsMonitor>();
-            
+
             UpdateParameters();
         }
 
-        #endregion
+#endregion
     }
 }

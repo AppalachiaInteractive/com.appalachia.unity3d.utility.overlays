@@ -11,6 +11,7 @@
  * Attribution is not required, but it is always welcomed!
  * -------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Appalachia.Utility.Overlays.Graphy.Audio;
@@ -19,15 +20,20 @@ using Appalachia.Utility.Overlays.Graphy.Ram;
 using Appalachia.Utility.Overlays.Graphy.Util;
 using UnityEngine;
 using UnityEngine.Events;
-using Debug = UnityEngine.Debug;
 
 namespace Appalachia.Utility.Overlays.Graphy
 {
     /// <summary>
-    /// Main class to access the Graphy Debugger API.
+    ///     Main class to access the Graphy Debugger API.
     /// </summary>
     public class GraphyDebugger : G_Singleton<GraphyDebugger>
     {
+#region Variables -> Serialized Private
+
+        [SerializeField] private List<DebugPacket> m_debugPackets = new();
+
+#endregion
+
         /* ----- TODO: ----------------------------
          * Add summaries to the variables.
          * Add summaries to the functions.
@@ -35,9 +41,105 @@ namespace Appalachia.Utility.Overlays.Graphy
          * Simplify the initializers of the DebugPackets, but check wether we should as some wont work with certain lists.
          * --------------------------------------*/
 
-        protected GraphyDebugger () { }
+        protected GraphyDebugger()
+        {
+        }
 
-        #region Enums -> Public
+#region Structs -> Public
+
+        [Serializable]
+        public struct DebugCondition
+        {
+            [Tooltip("Variable to compare against")]
+            public DebugVariable Variable;
+
+            [Tooltip("Comparer operator to use")]
+            public DebugComparer Comparer;
+
+            [Tooltip("Value to compare against the chosen variable")]
+            public float Value;
+        }
+
+#endregion
+
+#region Helper Classes
+
+        [Serializable]
+        public class DebugPacket
+        {
+            [Tooltip("If false, it won't be checked")]
+            public bool Active = true;
+
+            [Tooltip("Optional Id. It's used to get or remove DebugPackets in runtime")]
+            public int Id;
+
+            [Tooltip("If true, once the actions are executed, this DebugPacket will delete itself")]
+            public bool ExecuteOnce = true;
+
+            [Tooltip(
+                "Time to wait before checking if conditions are met (use this to avoid low fps drops triggering the conditions when loading the game)"
+            )]
+            public float InitSleepTime = 2;
+
+            [Tooltip(
+                "Time to wait before checking if conditions are met again (once they have already been met and if ExecuteOnce is false)"
+            )]
+            public float ExecuteSleepTime = 2;
+
+            public ConditionEvaluation ConditionEvaluation =
+                ConditionEvaluation.All_conditions_must_be_met;
+
+            [Tooltip("List of conditions that will be checked each frame")]
+            public List<DebugCondition> DebugConditions = new();
+
+            // Actions on conditions met
+
+            public MessageType MessageType;
+
+            [Multiline] public string Message = string.Empty;
+
+            public bool TakeScreenshot;
+            public string ScreenshotFileName = "Graphy_Screenshot";
+
+            [Tooltip("If true, it pauses the editor")]
+            public bool DebugBreak;
+
+            public UnityEvent UnityEvents;
+            public List<Action> Callbacks = new();
+
+            private bool canBeChecked;
+            private bool executed;
+
+            private float timePassed;
+
+            public bool Check => canBeChecked;
+
+            public void Update()
+            {
+                if (!canBeChecked)
+                {
+                    timePassed += Time.deltaTime;
+
+                    if ((executed && (timePassed >= ExecuteSleepTime)) ||
+                        (!executed && (timePassed >= InitSleepTime)))
+                    {
+                        canBeChecked = true;
+
+                        timePassed = 0;
+                    }
+                }
+            }
+
+            public void Executed()
+            {
+                canBeChecked = false;
+                executed = true;
+            }
+        }
+
+#endregion
+
+#region Enums -> Public
 
         public enum DebugVariable
         {
@@ -63,8 +165,7 @@ namespace Appalachia.Utility.Overlays.Graphy
         public enum ConditionEvaluation
         {
             All_conditions_must_be_met,
-            Only_one_condition_has_to_be_met,
-
+            Only_one_condition_has_to_be_met
         }
 
         public enum MessageType
@@ -74,110 +175,23 @@ namespace Appalachia.Utility.Overlays.Graphy
             Error
         }
 
-        #endregion
+#endregion
 
-        #region Structs -> Public
+#region Variables -> Private
 
-        [System.Serializable]
-        public struct DebugCondition
-        {
-            [Tooltip("Variable to compare against")]
-            public DebugVariable Variable;
-            [Tooltip("Comparer operator to use")]
-            public DebugComparer Comparer;
-            [Tooltip("Value to compare against the chosen variable")]
-            public float         Value;
-        }
+        private G_FpsMonitor m_fpsMonitor;
+        private G_RamMonitor m_ramMonitor;
+        private G_AudioMonitor m_audioMonitor;
 
-        #endregion
+#endregion
 
-        #region Helper Classes
-
-        [System.Serializable]
-        public class DebugPacket
-        {
-
-            [Tooltip("If false, it won't be checked")]
-            public bool                 Active                  = true;
-            [Tooltip("Optional Id. It's used to get or remove DebugPackets in runtime")]
-            public int                  Id;
-            [Tooltip("If true, once the actions are executed, this DebugPacket will delete itself")]
-            public bool                 ExecuteOnce             = true;
-            [Tooltip("Time to wait before checking if conditions are met (use this to avoid low fps drops triggering the conditions when loading the game)")]
-            public float                InitSleepTime           = 2;
-            [Tooltip("Time to wait before checking if conditions are met again (once they have already been met and if ExecuteOnce is false)")]
-            public float                ExecuteSleepTime        = 2;
-
-            public ConditionEvaluation  ConditionEvaluation     = ConditionEvaluation.All_conditions_must_be_met;
-            [Tooltip("List of conditions that will be checked each frame")]
-            public List<DebugCondition> DebugConditions         = new List<DebugCondition>();
-
-            // Actions on conditions met
-
-            public MessageType          MessageType;
-            [Multiline]
-            public string               Message                 = string.Empty;
-            public bool                 TakeScreenshot          = false;
-            public string               ScreenshotFileName      = "Graphy_Screenshot";
-            [Tooltip("If true, it pauses the editor")]
-            public bool                 DebugBreak              = false;
-            public UnityEvent           UnityEvents;
-            public List<System.Action>  Callbacks               = new List<System.Action>();
-
-
-            private bool canBeChecked = false;
-            private bool executed = false;
-
-            private float timePassed = 0;
-            
-            public bool Check { get { return canBeChecked; } }
-
-            public void Update()
-            {
-                if (!canBeChecked)
-                {
-                    timePassed += Time.deltaTime;
-
-                    if (    (executed && timePassed >= ExecuteSleepTime)
-                        || (!executed && timePassed >= InitSleepTime))
-                    {
-                        canBeChecked = true;
-
-                        timePassed = 0;
-                    }
-                }
-            }
-
-            public void Executed()
-            {
-                canBeChecked = false;
-                executed = true;
-            }
-        }
-
-        #endregion
-
-        #region Variables -> Serialized Private
-
-        [SerializeField] private    List<DebugPacket>   m_debugPackets = new List<DebugPacket>();
-
-        #endregion
-
-        #region Variables -> Private
-
-        private                     G_FpsMonitor          m_fpsMonitor = null;
-        private                     G_RamMonitor          m_ramMonitor = null;
-        private                     G_AudioMonitor        m_audioMonitor = null;
-
-        #endregion
-
-        #region Methods -> Unity Callbacks
+#region Methods -> Unity Callbacks
 
         private void Start()
         {
-            m_fpsMonitor    = GetComponentInChildren<G_FpsMonitor>();
-            m_ramMonitor    = GetComponentInChildren<G_RamMonitor>();
-            m_audioMonitor  = GetComponentInChildren<G_AudioMonitor>();
+            m_fpsMonitor = GetComponentInChildren<G_FpsMonitor>();
+            m_ramMonitor = GetComponentInChildren<G_RamMonitor>();
+            m_audioMonitor = GetComponentInChildren<G_AudioMonitor>();
         }
 
         private void Update()
@@ -185,12 +199,12 @@ namespace Appalachia.Utility.Overlays.Graphy
             CheckDebugPackets();
         }
 
-        #endregion
+#endregion
 
-        #region Public Methods
+#region Public Methods
 
         /// <summary>
-        /// Add a new DebugPacket.
+        ///     Add a new DebugPacket.
         /// </summary>
         public void AddNewDebugPacket(DebugPacket newDebugPacket)
         {
@@ -198,19 +212,17 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Add a new DebugPacket.
+        ///     Add a new DebugPacket.
         /// </summary>
-        public void AddNewDebugPacket
-        (
+        public void AddNewDebugPacket(
             int newId,
             DebugCondition newDebugCondition,
             MessageType newMessageType,
             string newMessage,
             bool newDebugBreak,
-            System.Action newCallback
-        )
+            Action newCallback)
         {
-            DebugPacket newDebugPacket = new DebugPacket();
+            var newDebugPacket = new DebugPacket();
 
             newDebugPacket.Id = newId;
             newDebugPacket.DebugConditions.Add(newDebugCondition);
@@ -223,19 +235,17 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Add a new DebugPacket.
+        ///     Add a new DebugPacket.
         /// </summary>
-        public void AddNewDebugPacket
-        (
+        public void AddNewDebugPacket(
             int newId,
             List<DebugCondition> newDebugConditions,
             MessageType newMessageType,
             string newMessage,
             bool newDebugBreak,
-            System.Action newCallback
-        )
+            Action newCallback)
         {
-            DebugPacket newDebugPacket = new DebugPacket();
+            var newDebugPacket = new DebugPacket();
 
             newDebugPacket.Id = newId;
             newDebugPacket.DebugConditions = newDebugConditions;
@@ -248,19 +258,17 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Add a new DebugPacket.
+        ///     Add a new DebugPacket.
         /// </summary>
-        public void AddNewDebugPacket
-        (
+        public void AddNewDebugPacket(
             int newId,
             DebugCondition newDebugCondition,
             MessageType newMessageType,
             string newMessage,
             bool newDebugBreak,
-            List<System.Action> newCallbacks
-        )
+            List<Action> newCallbacks)
         {
-            DebugPacket newDebugPacket = new DebugPacket();
+            var newDebugPacket = new DebugPacket();
 
             newDebugPacket.Id = newId;
             newDebugPacket.DebugConditions.Add(newDebugCondition);
@@ -273,19 +281,17 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Add a new DebugPacket.
+        ///     Add a new DebugPacket.
         /// </summary>
-        public void AddNewDebugPacket
-        (
+        public void AddNewDebugPacket(
             int newId,
             List<DebugCondition> newDebugConditions,
             MessageType newMessageType,
             string newMessage,
             bool newDebugBreak,
-            List<System.Action> newCallbacks
-        )
+            List<Action> newCallbacks)
         {
-            DebugPacket newDebugPacket = new DebugPacket();
+            var newDebugPacket = new DebugPacket();
 
             newDebugPacket.Id = newId;
             newDebugPacket.DebugConditions = newDebugConditions;
@@ -298,7 +304,7 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Returns the first Packet with the specified ID in the DebugPacket list.
+        ///     Returns the first Packet with the specified ID in the DebugPacket list.
         /// </summary>
         /// <param name="packetId"></param>
         /// <returns></returns>
@@ -308,7 +314,7 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Returns a list with all the Packets with the specified ID in the DebugPacket list.
+        ///     Returns a list with all the Packets with the specified ID in the DebugPacket list.
         /// </summary>
         /// <param name="packetId"></param>
         /// <returns></returns>
@@ -318,20 +324,20 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Removes the first Packet with the specified ID in the DebugPacket list.
+        ///     Removes the first Packet with the specified ID in the DebugPacket list.
         /// </summary>
         /// <param name="packetId"></param>
         /// <returns></returns>
         public void RemoveFirstDebugPacketWithId(int packetId)
         {
-            if (m_debugPackets != null && GetFirstDebugPacketWithId(packetId) != null)
+            if ((m_debugPackets != null) && (GetFirstDebugPacketWithId(packetId) != null))
             {
                 m_debugPackets.Remove(GetFirstDebugPacketWithId(packetId));
             }
         }
 
         /// <summary>
-        /// Removes all the Packets with the specified ID in the DebugPacket list.
+        ///     Removes all the Packets with the specified ID in the DebugPacket list.
         /// </summary>
         /// <param name="packetId"></param>
         /// <returns></returns>
@@ -344,11 +350,11 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Add an Action callback to the first Packet with the specified ID in the DebugPacket list.
+        ///     Add an Action callback to the first Packet with the specified ID in the DebugPacket list.
         /// </summary>
         /// <param name="callback"></param>
         /// <param name="id"></param>
-        public void AddCallbackToFirstDebugPacketWithId(System.Action callback, int id)
+        public void AddCallbackToFirstDebugPacketWithId(Action callback, int id)
         {
             if (GetFirstDebugPacketWithId(id) != null)
             {
@@ -357,11 +363,11 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Add an Action callback to all the Packets with the specified ID in the DebugPacket list.
+        ///     Add an Action callback to all the Packets with the specified ID in the DebugPacket list.
         /// </summary>
         /// <param name="callback"></param>
         /// <param name="id"></param>
-        public void AddCallbackToAllDebugPacketWithId(System.Action callback, int id)
+        public void AddCallbackToAllDebugPacketWithId(Action callback, int id)
         {
             if (GetAllDebugPacketsWithId(id) != null)
             {
@@ -375,12 +381,12 @@ namespace Appalachia.Utility.Overlays.Graphy
             }
         }
 
-        #endregion
+#endregion
 
-        #region Methods -> Private
+#region Methods -> Private
 
         /// <summary>
-        /// Checks all the Debug Packets to see if they have to be executed.
+        ///     Checks all the Debug Packets to see if they have to be executed.
         /// </summary>
         private void CheckDebugPackets()
         {
@@ -389,11 +395,11 @@ namespace Appalachia.Utility.Overlays.Graphy
                 return;
             }
 
-            for (int i = 0; i < m_debugPackets.Count; i++)
+            for (var i = 0; i < m_debugPackets.Count; i++)
             {
-                DebugPacket packet = m_debugPackets[i];
+                var packet = m_debugPackets[i];
 
-                if (packet != null && packet.Active)
+                if ((packet != null) && packet.Active)
                 {
                     packet.Update();
 
@@ -402,7 +408,7 @@ namespace Appalachia.Utility.Overlays.Graphy
                         switch (packet.ConditionEvaluation)
                         {
                             case ConditionEvaluation.All_conditions_must_be_met:
-                                int count = 0;
+                                var count = 0;
 
                                 foreach (var packetDebugCondition in packet.DebugConditions)
                                 {
@@ -446,11 +452,11 @@ namespace Appalachia.Utility.Overlays.Graphy
                 }
             }
 
-            m_debugPackets.RemoveAll((packet) => packet == null);
+            m_debugPackets.RemoveAll(packet => packet == null);
         }
 
         /// <summary>
-        /// Returns true if a condition is met.
+        ///     Returns true if a condition is met.
         /// </summary>
         /// <param name="debugCondition"></param>
         /// <returns></returns>
@@ -459,15 +465,22 @@ namespace Appalachia.Utility.Overlays.Graphy
             switch (debugCondition.Comparer)
             {
                 case DebugComparer.Less_than:
-                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) < debugCondition.Value;
+                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) <
+                           debugCondition.Value;
                 case DebugComparer.Equals_or_less_than:
-                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) <= debugCondition.Value;
+                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) <=
+                           debugCondition.Value;
                 case DebugComparer.Equals:
-                    return Mathf.Approximately(GetRequestedValueFromDebugVariable(debugCondition.Variable), debugCondition.Value);
+                    return Mathf.Approximately(
+                        GetRequestedValueFromDebugVariable(debugCondition.Variable),
+                        debugCondition.Value
+                    );
                 case DebugComparer.Equals_or_greater_than:
-                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) >= debugCondition.Value;
+                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) >=
+                           debugCondition.Value;
                 case DebugComparer.Greater_than:
-                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) > debugCondition.Value;
+                    return GetRequestedValueFromDebugVariable(debugCondition.Variable) >
+                           debugCondition.Value;
 
                 default:
                     return false;
@@ -475,7 +488,7 @@ namespace Appalachia.Utility.Overlays.Graphy
         }
 
         /// <summary>
-        /// Obtains the requested value from the specified variable.
+        ///     Obtains the requested value from the specified variable.
         /// </summary>
         /// <param name="debugVariable"></param>
         /// <returns></returns>
@@ -484,32 +497,31 @@ namespace Appalachia.Utility.Overlays.Graphy
             switch (debugVariable)
             {
                 case DebugVariable.Fps:
-                    return m_fpsMonitor != null     ? m_fpsMonitor.CurrentFPS   : 0;
+                    return m_fpsMonitor != null ? m_fpsMonitor.CurrentFPS : 0;
                 case DebugVariable.Fps_Min:
-                    return m_fpsMonitor != null     ? m_fpsMonitor.OnePercentFPS       : 0;
+                    return m_fpsMonitor != null ? m_fpsMonitor.OnePercentFPS : 0;
                 case DebugVariable.Fps_Max:
-                    return m_fpsMonitor != null     ? m_fpsMonitor.Zero1PercentFps       : 0;
+                    return m_fpsMonitor != null ? m_fpsMonitor.Zero1PercentFps : 0;
                 case DebugVariable.Fps_Avg:
-                    return m_fpsMonitor != null     ? m_fpsMonitor.AverageFPS   : 0;
+                    return m_fpsMonitor != null ? m_fpsMonitor.AverageFPS : 0;
 
                 case DebugVariable.Ram_Allocated:
-                    return m_ramMonitor != null     ? m_ramMonitor.AllocatedRam : 0;
+                    return m_ramMonitor != null ? m_ramMonitor.AllocatedRam : 0;
                 case DebugVariable.Ram_Reserved:
-                    return m_ramMonitor != null     ? m_ramMonitor.AllocatedRam : 0;
+                    return m_ramMonitor != null ? m_ramMonitor.AllocatedRam : 0;
                 case DebugVariable.Ram_Mono:
-                    return m_ramMonitor != null     ? m_ramMonitor.AllocatedRam : 0;
+                    return m_ramMonitor != null ? m_ramMonitor.AllocatedRam : 0;
 
                 case DebugVariable.Audio_DB:
-                    return m_audioMonitor != null   ? m_audioMonitor.MaxDB      : 0;
+                    return m_audioMonitor != null ? m_audioMonitor.MaxDB : 0;
 
                 default:
                     return 0;
-
             }
         }
 
         /// <summary>
-        /// Executes the operations in the DebugPacket specified.
+        ///     Executes the operations in the DebugPacket specified.
         /// </summary>
         /// <param name="debugPacket"></param>
         private void ExecuteOperationsInDebugPacket(DebugPacket debugPacket)
@@ -523,7 +535,7 @@ namespace Appalachia.Utility.Overlays.Graphy
 
                 if (debugPacket.Message != "")
                 {
-                    string message = "[Graphy] (" + System.DateTime.Now + "): " + debugPacket.Message;
+                    var message = "[Graphy] (" + DateTime.Now + "): " + debugPacket.Message;
 
                     switch (debugPacket.MessageType)
                     {
@@ -541,7 +553,7 @@ namespace Appalachia.Utility.Overlays.Graphy
 
                 if (debugPacket.TakeScreenshot)
                 {
-                    string path = debugPacket.ScreenshotFileName + "_" + System.DateTime.Now + ".png";
+                    var path = debugPacket.ScreenshotFileName + "_" + DateTime.Now + ".png";
                     path = path.Replace("/", "-").Replace(" ", "_").Replace(":", "-");
 
 #if UNITY_2017_1_OR_NEWER
@@ -555,13 +567,16 @@ namespace Appalachia.Utility.Overlays.Graphy
 
                 foreach (var callback in debugPacket.Callbacks)
                 {
-                    if (callback != null) callback();
+                    if (callback != null)
+                    {
+                        callback();
+                    }
                 }
 
                 debugPacket.Executed();
             }
         }
 
-        #endregion
+#endregion
     }
 }

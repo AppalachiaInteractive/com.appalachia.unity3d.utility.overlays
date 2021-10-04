@@ -1,35 +1,39 @@
-﻿namespace Appalachia.Utility.Overlays.IngameDebugConsole
+﻿using System;
+
+namespace Appalachia.Utility.Overlays.IngameDebugConsole
 {
-	public class DebugLogIndexList
-	{
-		private int[] indices;
-		private int size;
+    public class DebugLogIndexList
+    {
+        private int[] indices;
+        private int size;
 
-		public int Count { get { return size; } }
-		public int this[int index] { get { return indices[index]; } }
+        public DebugLogIndexList()
+        {
+            indices = new int[64];
+            size = 0;
+        }
 
-		public DebugLogIndexList()
-		{
-			indices = new int[64];
-			size = 0;
-		}
+        public int Count => size;
+        public int this[int index] => indices[index];
 
-		public void Add( int index )
-		{
-			if( size == indices.Length )
-				System.Array.Resize( ref indices, size * 2 );
+        public void Add(int index)
+        {
+            if (size == indices.Length)
+            {
+                Array.Resize(ref indices, size * 2);
+            }
 
-			indices[size++] = index;
-		}
+            indices[size++] = index;
+        }
 
-		public void Clear()
-		{
-			size = 0;
-		}
+        public void Clear()
+        {
+            size = 0;
+        }
 
-		public int IndexOf( int index )
-		{
-			return System.Array.IndexOf( indices, index );
-		}
-	}
+        public int IndexOf(int index)
+        {
+            return Array.IndexOf(indices, index);
+        }
+    }
 }

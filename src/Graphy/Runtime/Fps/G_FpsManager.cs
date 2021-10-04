@@ -21,34 +21,34 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
 {
     public class G_FpsManager : MonoBehaviour, IMovable, IModifiableState
     {
-        #region Variables -> Serialized Private
+#region Variables -> Serialized Private
 
-        [SerializeField] private    GameObject                  m_fpsGraphGameObject = null;
+        [SerializeField] private GameObject m_fpsGraphGameObject;
 
-        [SerializeField] private    List<GameObject>            m_nonBasicTextGameObjects   = new List<GameObject>();
+        [SerializeField] private List<GameObject> m_nonBasicTextGameObjects = new();
 
-        [SerializeField] private    List<Image>                 m_backgroundImages          = new List<Image>();
+        [SerializeField] private List<Image> m_backgroundImages = new();
 
-        #endregion
+#endregion
 
-        #region Variables -> Private
+#region Variables -> Private
 
-        private                     GraphyManager               m_graphyManager = null;
-        
-        private                     G_FpsGraph                  m_fpsGraph = null;
-        private                     G_FpsMonitor                m_fpsMonitor = null;
-        private                     G_FpsText                   m_fpsText = null;
+        private GraphyManager m_graphyManager;
 
-        private                     RectTransform               m_rectTransform = null;
+        private G_FpsGraph m_fpsGraph;
+        private G_FpsMonitor m_fpsMonitor;
+        private G_FpsText m_fpsText;
 
-        private                     List<GameObject>            m_childrenGameObjects       = new List<GameObject>();
+        private RectTransform m_rectTransform;
 
-        private                     GraphyManager.ModuleState   m_previousModuleState = GraphyManager.ModuleState.FULL;
-        private                     GraphyManager.ModuleState   m_currentModuleState = GraphyManager.ModuleState.FULL;
-        
-        #endregion
+        private readonly List<GameObject> m_childrenGameObjects = new();
 
-        #region Methods -> Unity Callbacks
+        private GraphyManager.ModuleState m_previousModuleState = GraphyManager.ModuleState.FULL;
+        private GraphyManager.ModuleState m_currentModuleState = GraphyManager.ModuleState.FULL;
+
+#endregion
+
+#region Methods -> Unity Callbacks
 
         private void Awake()
         {
@@ -60,46 +60,46 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
             UpdateParameters();
         }
 
-        #endregion
+#endregion
 
-        #region Methods -> Public
+#region Methods -> Public
 
         public void SetPosition(GraphyManager.ModulePosition newModulePosition)
         {
-            float xSideOffset = Mathf.Abs(m_rectTransform.anchoredPosition.x);
-            float ySideOffset = Mathf.Abs(m_rectTransform.anchoredPosition.y);
+            var xSideOffset = Mathf.Abs(m_rectTransform.anchoredPosition.x);
+            var ySideOffset = Mathf.Abs(m_rectTransform.anchoredPosition.y);
 
             switch (newModulePosition)
             {
                 case GraphyManager.ModulePosition.TOP_LEFT:
 
-                    m_rectTransform.anchorMax           = Vector2.up;
-                    m_rectTransform.anchorMin           = Vector2.up;
-                    m_rectTransform.anchoredPosition    = new Vector2(xSideOffset, -ySideOffset);
+                    m_rectTransform.anchorMax = Vector2.up;
+                    m_rectTransform.anchorMin = Vector2.up;
+                    m_rectTransform.anchoredPosition = new Vector2(xSideOffset, -ySideOffset);
 
                     break;
 
                 case GraphyManager.ModulePosition.TOP_RIGHT:
 
-                    m_rectTransform.anchorMax           = Vector2.one;
-                    m_rectTransform.anchorMin           = Vector2.one;
-                    m_rectTransform.anchoredPosition    = new Vector2(-xSideOffset, -ySideOffset);
+                    m_rectTransform.anchorMax = Vector2.one;
+                    m_rectTransform.anchorMin = Vector2.one;
+                    m_rectTransform.anchoredPosition = new Vector2(-xSideOffset, -ySideOffset);
 
                     break;
 
                 case GraphyManager.ModulePosition.BOTTOM_LEFT:
 
-                    m_rectTransform.anchorMax           = Vector2.zero;
-                    m_rectTransform.anchorMin           = Vector2.zero;
-                    m_rectTransform.anchoredPosition    = new Vector2(xSideOffset, ySideOffset);
+                    m_rectTransform.anchorMax = Vector2.zero;
+                    m_rectTransform.anchorMin = Vector2.zero;
+                    m_rectTransform.anchoredPosition = new Vector2(xSideOffset, ySideOffset);
 
                     break;
 
                 case GraphyManager.ModulePosition.BOTTOM_RIGHT:
 
-                    m_rectTransform.anchorMax           = Vector2.right;
-                    m_rectTransform.anchorMin           = Vector2.right;
-                    m_rectTransform.anchoredPosition    = new Vector2(-xSideOffset, ySideOffset);
+                    m_rectTransform.anchorMax = Vector2.right;
+                    m_rectTransform.anchorMin = Vector2.right;
+                    m_rectTransform.anchoredPosition = new Vector2(-xSideOffset, ySideOffset);
 
                     break;
 
@@ -115,7 +115,7 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
                 m_previousModuleState = m_currentModuleState;
             }
 
-            m_currentModuleState    = state;
+            m_currentModuleState = state;
 
             switch (state)
             {
@@ -132,14 +132,14 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
                     {
                         m_backgroundImages.SetAllActive(false);
                     }
-                    
+
                     break;
 
                 case GraphyManager.ModuleState.TEXT:
                     gameObject.SetActive(true);
                     m_childrenGameObjects.SetAllActive(true);
                     SetGraphActive(false);
-                    
+
                     if (m_graphyManager.Background)
                     {
                         m_backgroundImages.SetOneActive(1);
@@ -148,7 +148,7 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
                     {
                         m_backgroundImages.SetAllActive(false);
                     }
-                    
+
                     break;
 
                 case GraphyManager.ModuleState.BASIC:
@@ -156,7 +156,7 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
                     m_childrenGameObjects.SetAllActive(true);
                     m_nonBasicTextGameObjects.SetAllActive(false);
                     SetGraphActive(false);
-                    
+
                     if (m_graphyManager.Background)
                     {
                         m_backgroundImages.SetOneActive(2);
@@ -172,7 +172,7 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
                     gameObject.SetActive(true);
                     m_childrenGameObjects.SetAllActive(false);
                     SetGraphActive(false);
-                    
+
                     m_backgroundImages.SetAllActive(false);
                     break;
 
@@ -186,18 +186,18 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
         {
             SetState(m_previousModuleState);
         }
-        
+
         public void UpdateParameters()
         {
             foreach (var image in m_backgroundImages)
             {
                 image.color = m_graphyManager.BackgroundColor;
             }
-            
-            m_fpsGraph      .UpdateParameters();
-            m_fpsMonitor    .UpdateParameters();
-            m_fpsText       .UpdateParameters();
-            
+
+            m_fpsGraph.UpdateParameters();
+            m_fpsMonitor.UpdateParameters();
+            m_fpsText.UpdateParameters();
+
             SetState(m_graphyManager.FpsModuleState);
         }
 
@@ -208,26 +208,26 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
                 image.color = m_graphyManager.BackgroundColor;
             }
 
-            m_fpsGraph      .UpdateParameters();
-            m_fpsMonitor    .UpdateParameters();
-            m_fpsText       .UpdateParameters();
+            m_fpsGraph.UpdateParameters();
+            m_fpsMonitor.UpdateParameters();
+            m_fpsText.UpdateParameters();
 
             SetState(m_currentModuleState, true);
         }
 
-        #endregion
+#endregion
 
-        #region Methods -> Private
+#region Methods -> Private
 
         private void Init()
         {
             m_graphyManager = transform.root.GetComponentInChildren<GraphyManager>();
-            
+
             m_rectTransform = GetComponent<RectTransform>();
 
-            m_fpsGraph      = GetComponent<G_FpsGraph>();
-            m_fpsMonitor    = GetComponent<G_FpsMonitor>();
-            m_fpsText       = GetComponent<G_FpsText>();
+            m_fpsGraph = GetComponent<G_FpsGraph>();
+            m_fpsMonitor = GetComponent<G_FpsMonitor>();
+            m_fpsText = GetComponent<G_FpsText>();
 
             foreach (Transform child in transform)
             {
@@ -244,6 +244,6 @@ namespace Appalachia.Utility.Overlays.Graphy.Fps
             m_fpsGraphGameObject.SetActive(active);
         }
 
-        #endregion
+#endregion
     }
 }

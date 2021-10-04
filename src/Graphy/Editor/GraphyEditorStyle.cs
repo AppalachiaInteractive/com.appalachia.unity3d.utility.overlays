@@ -18,50 +18,30 @@ namespace Appalachia.Utility.Overlays.Graphy
 {
     internal static class GraphyEditorStyle
     {
-        #region Variables -> Private
-
-        private static Texture2D _managerLogoTexture = null;
-        private static Texture2D _debuggerLogoTexture = null;
-        private static GUISkin m_skin = null;
-        private static GUIStyle m_headerStyle1 = null;
-        private static GUIStyle m_headerStyle2 = null;
-        private static GUIStyle m_foldoutStyle = null;
-        private static string path;
-
-        #endregion
-
-        #region Properties -> Public
-
-        public static Texture2D ManagerLogoTexture => _managerLogoTexture;
-        public static Texture2D DebuggerLogoTexture => _debuggerLogoTexture;
-        public static GUISkin Skin => m_skin;
-        public static GUIStyle HeaderStyle1 => m_headerStyle1;
-        public static GUIStyle HeaderStyle2 => m_headerStyle2;
-        public static GUIStyle FoldoutStyle => m_foldoutStyle;
-
-        #endregion
-
-        #region Static Constructor
+#region Static Constructor
 
         static GraphyEditorStyle()
         {
-            string managerLogoGuid = AssetDatabase.FindAssets( $"Manager_Logo_{(EditorGUIUtility.isProSkin ? "White" : "Dark")}" )[0];
-            string debuggerLogoGuid = AssetDatabase.FindAssets( $"Debugger_Logo_{(EditorGUIUtility.isProSkin ? "White" : "Dark")}" )[0];
-            string guiSkinGuid = AssetDatabase.FindAssets( "GraphyGUISkin" )[ 0 ];
+            var managerLogoGuid = AssetDatabase.FindAssets(
+                $"Manager_Logo_{(EditorGUIUtility.isProSkin ? "White" : "Dark")}"
+            )[0];
+            var debuggerLogoGuid = AssetDatabase.FindAssets(
+                $"Debugger_Logo_{(EditorGUIUtility.isProSkin ? "White" : "Dark")}"
+            )[0];
+            var guiSkinGuid = AssetDatabase.FindAssets("GraphyGUISkin")[0];
 
-            _managerLogoTexture = AssetDatabase.LoadAssetAtPath<Texture2D>
-            (
-                AssetDatabase.GUIDToAssetPath( managerLogoGuid )
-            );
+            _managerLogoTexture =
+                AssetDatabase.LoadAssetAtPath<Texture2D>(
+                    AssetDatabase.GUIDToAssetPath(managerLogoGuid)
+                );
 
-            _debuggerLogoTexture = AssetDatabase.LoadAssetAtPath<Texture2D>
-            (
-                AssetDatabase.GUIDToAssetPath( debuggerLogoGuid )
-            );
+            _debuggerLogoTexture =
+                AssetDatabase.LoadAssetAtPath<Texture2D>(
+                    AssetDatabase.GUIDToAssetPath(debuggerLogoGuid)
+                );
 
-            m_skin = AssetDatabase.LoadAssetAtPath<GUISkin>
-            (
-                AssetDatabase.GUIDToAssetPath( guiSkinGuid )
+            m_skin = AssetDatabase.LoadAssetAtPath<GUISkin>(
+                AssetDatabase.GUIDToAssetPath(guiSkinGuid)
             );
 
             if (m_skin != null)
@@ -69,10 +49,9 @@ namespace Appalachia.Utility.Overlays.Graphy
                 m_headerStyle1 = m_skin.GetStyle("Header1");
                 m_headerStyle2 = m_skin.GetStyle("Header2");
 
-                SetGuiStyleFontColor
-                (
-                    guiStyle: m_headerStyle2,
-                    color: EditorGUIUtility.isProSkin ? Color.white : Color.black
+                SetGuiStyleFontColor(
+                    m_headerStyle2,
+                    EditorGUIUtility.isProSkin ? Color.white : Color.black
                 );
             }
             else
@@ -88,16 +67,15 @@ namespace Appalachia.Utility.Overlays.Graphy
                 contentOffset = Vector2.down * 3f
             };
 
-            SetGuiStyleFontColor
-            (
-                guiStyle: m_foldoutStyle,
-                color: EditorGUIUtility.isProSkin ? Color.white : Color.black
+            SetGuiStyleFontColor(
+                m_foldoutStyle,
+                EditorGUIUtility.isProSkin ? Color.white : Color.black
             );
         }
 
-        #endregion
+#endregion
 
-        #region Methods -> Private
+#region Methods -> Private
 
         private static void SetGuiStyleFontColor(GUIStyle guiStyle, Color color)
         {
@@ -111,6 +89,29 @@ namespace Appalachia.Utility.Overlays.Graphy
             guiStyle.onFocused.textColor = color;
         }
 
-        #endregion
+#endregion
+
+#region Variables -> Private
+
+        private static readonly Texture2D _managerLogoTexture;
+        private static readonly Texture2D _debuggerLogoTexture;
+        private static readonly GUISkin m_skin;
+        private static readonly GUIStyle m_headerStyle1;
+        private static readonly GUIStyle m_headerStyle2;
+        private static readonly GUIStyle m_foldoutStyle;
+        private static string path;
+
+#endregion
+
+#region Properties -> Public
+
+        public static Texture2D ManagerLogoTexture => _managerLogoTexture;
+        public static Texture2D DebuggerLogoTexture => _debuggerLogoTexture;
+        public static GUISkin Skin => m_skin;
+        public static GUIStyle HeaderStyle1 => m_headerStyle1;
+        public static GUIStyle HeaderStyle2 => m_headerStyle2;
+        public static GUIStyle FoldoutStyle => m_foldoutStyle;
+
+#endregion
     }
 }
